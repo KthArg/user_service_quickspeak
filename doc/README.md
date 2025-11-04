@@ -107,6 +107,26 @@ URL: `http://localhost:8081/h2-console`
 | PATCH | `/api/v1/users/{id}/activate` | Activar usuario |
 | PATCH | `/api/v1/users/{id}/deactivate` | Desactivar usuario |
 
+### Catálogo de Idiomas
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/v1/languages` | Listar todos los idiomas disponibles |
+| GET | `/api/v1/languages/{id}` | Obtener idioma por ID |
+| GET | `/api/v1/languages/code/{code}` | Obtener idioma por código ISO (ej: "es", "en") |
+| GET | `/api/v1/languages/starting` | Obtener idiomas recomendados para empezar (top 10) |
+
+### Gestión de Idiomas de Usuarios
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/v1/users/{userId}/languages` | Obtener todos los idiomas del usuario |
+| GET | `/api/v1/users/{userId}/languages/native` | Obtener idioma nativo del usuario |
+| GET | `/api/v1/users/{userId}/languages/learning` | Obtener idiomas que está aprendiendo |
+| POST | `/api/v1/users/{userId}/languages` | Agregar idioma al usuario |
+| PATCH | `/api/v1/users/{userId}/languages/{languageId}/native` | Marcar idioma como nativo |
+| DELETE | `/api/v1/users/{userId}/languages/{languageId}` | Eliminar idioma del usuario |
+
 ### Health Check
 
 | Método | Endpoint | Descripción |
@@ -139,6 +159,58 @@ curl http://localhost:8081/api/v1/users
 
 ```bash
 curl http://localhost:8081/api/v1/users/1
+```
+
+### Obtener todos los idiomas disponibles
+
+```bash
+curl http://localhost:8081/api/v1/languages
+```
+
+### Obtener idiomas recomendados para empezar
+
+```bash
+curl http://localhost:8081/api/v1/languages/starting
+```
+
+### Obtener idioma por código
+
+```bash
+curl http://localhost:8081/api/v1/languages/code/es
+```
+
+### Agregar idioma a usuario
+
+```bash
+curl -X POST http://localhost:8081/api/v1/users/1/languages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "languageId": 1
+  }'
+```
+
+### Marcar idioma como nativo
+
+```bash
+curl -X PATCH http://localhost:8081/api/v1/users/1/languages/2/native
+```
+
+### Obtener idiomas de un usuario
+
+```bash
+curl http://localhost:8081/api/v1/users/1/languages
+```
+
+### Obtener idioma nativo de un usuario
+
+```bash
+curl http://localhost:8081/api/v1/users/1/languages/native
+```
+
+### Eliminar idioma de usuario
+
+```bash
+curl -X DELETE http://localhost:8081/api/v1/users/1/languages/2
 ```
 
 ## 🔐 Roles de Usuario
