@@ -1,0 +1,276 @@
+📦 USER-SERVICE - ESTRUCTURA COMPLETA DEL PROYECTO
+═══════════════════════════════════════════════════════════════════
+
+user-service/
+│
+├── 📄 pom.xml                                  (Configuración Maven)
+├── 📄 README.md                                (Documentación principal)
+├── 📄 ARCHITECTURE.md                          (Arquitectura detallada)
+├── 📄 .gitignore                               (Git ignore rules)
+├── 🐳 Dockerfile                               (Containerización)
+├── 🐳 docker-compose.yml                       (Docker Compose)
+├── 🚀 deploy-azure.sh                          (Script despliegue Azure)
+├── 📮 postman_collection.json                  (Tests de API)
+│
+├── 📁 src/
+│   ├── 📁 main/
+│   │   ├── 📁 java/com/yourteacher/userservice/
+│   │   │   │
+│   │   │   ├── 📄 UserServiceApplication.java        (Main class)
+│   │   │   │
+│   │   │   ├── 📁 domain/                            🔵 DOMAIN LAYER
+│   │   │   │   ├── 📁 model/
+│   │   │   │   │   ├── User.java                     (Entidad de dominio)
+│   │   │   │   │   ├── Role.java                     (Enum de roles)
+│   │   │   │   │   └── UserStatus.java               (Enum de estados)
+│   │   │   │   │
+│   │   │   │   └── 📁 port/                          (Interfaces/Contratos)
+│   │   │   │       ├── 📁 in/
+│   │   │   │       │   └── UserService.java          (Casos de uso)
+│   │   │   │       │
+│   │   │   │       └── 📁 out/
+│   │   │   │           ├── UserRepository.java       (Persistencia)
+│   │   │   │           └── PasswordEncoder.java      (Encriptación)
+│   │   │   │
+│   │   │   ├── 📁 application/                       🟢 APPLICATION LAYER
+│   │   │   │   └── 📁 service/
+│   │   │   │       └── UserServiceImpl.java          (Implementación casos de uso)
+│   │   │   │
+│   │   │   ├── 📁 adapter/                           🟡 ADAPTER LAYER
+│   │   │   │   │
+│   │   │   │   ├── 📁 in/                            (Input Adapters)
+│   │   │   │   │   └── 📁 web/
+│   │   │   │   │       ├── UserController.java       (REST Controller)
+│   │   │   │   │       ├── 📁 dto/
+│   │   │   │   │       │   ├── UserRequest.java      (DTO Request)
+│   │   │   │   │       │   └── UserResponse.java     (DTO Response)
+│   │   │   │   │       └── 📁 mapper/
+│   │   │   │   │           └── UserDtoMapper.java    (DTO ↔ Domain)
+│   │   │   │   │
+│   │   │   │   └── 📁 out/                           (Output Adapters)
+│   │   │   │       ├── 📁 persistence/
+│   │   │   │       │   ├── JpaUserRepository.java    (Spring Data JPA)
+│   │   │   │       │   ├── UserRepositoryAdapter.java (Adapter)
+│   │   │   │       │   ├── 📁 entity/
+│   │   │   │       │   │   └── UserEntity.java       (JPA Entity)
+│   │   │   │       │   └── 📁 mapper/
+│   │   │   │       │       └── UserMapper.java       (Entity ↔ Domain)
+│   │   │   │       │
+│   │   │   │       └── 📁 security/
+│   │   │   │           └── BcryptPasswordEncoderAdapter.java
+│   │   │   │
+│   │   │   └── 📁 infrastructure/                    🔴 INFRASTRUCTURE
+│   │   │       ├── 📁 config/
+│   │   │       │   └── SecurityConfig.java           (Spring Security)
+│   │   │       │
+│   │   │       └── 📁 exception/
+│   │   │           ├── GlobalExceptionHandler.java   (Error handling)
+│   │   │           └── ErrorResponse.java            (DTO de errores)
+│   │   │
+│   │   └── 📁 resources/
+│   │       ├── application.yml                       (Config desarrollo)
+│   │       ├── application-prod.yml                  (Config producción)
+│   │       └── data.sql                              (Datos iniciales)
+│   │
+│   └── 📁 test/
+│       └── 📁 java/com/yourteacher/userservice/
+│           └── 📁 domain/
+│               └── 📁 model/
+│                   └── UserTest.java                 (Tests unitarios)
+│
+└── 📁 target/                                        (Archivos compilados)
+    └── user-service-1.0.0-SNAPSHOT.jar
+
+
+═══════════════════════════════════════════════════════════════════
+LEYENDA DE CAPAS
+═══════════════════════════════════════════════════════════════════
+
+🔵 DOMAIN LAYER (Núcleo de Negocio)
+   • Lógica de negocio pura
+   • Sin dependencias de frameworks
+   • Modelos de dominio
+   • Interfaces (Ports)
+
+🟢 APPLICATION LAYER (Orquestación)
+   • Implementación de casos de uso
+   • Coordina operaciones
+   • Gestiona transacciones
+   • Orquesta el dominio
+
+🟡 ADAPTER LAYER (Conectores)
+   • Input Adapters: REST API, GraphQL, etc.
+   • Output Adapters: Base de datos, servicios externos
+   • Mappers y transformaciones
+   • Conecta el dominio con el exterior
+
+🔴 INFRASTRUCTURE (Configuración)
+   • Configuración de Spring
+   • Manejo de errores
+   • Seguridad
+   • Aspectos transversales
+
+
+═══════════════════════════════════════════════════════════════════
+FLUJO DE DATOS
+═══════════════════════════════════════════════════════════════════
+
+HTTP Request
+    ↓
+UserController (Input Adapter) 🟡
+    ↓ (UserRequest DTO)
+UserDtoMapper
+    ↓ (User Domain Model)
+UserServiceImpl (Application) 🟢
+    ↓ (usa)
+User (Domain Model) 🔵
+    ↓ (a través de)
+UserRepository Port 🔵
+    ↓ (implementado por)
+UserRepositoryAdapter (Output Adapter) 🟡
+    ↓ (usa)
+JpaUserRepository (Spring Data JPA)
+    ↓ (persiste)
+UserEntity (JPA)
+    ↓
+Database (H2/Azure SQL)
+
+
+═══════════════════════════════════════════════════════════════════
+DEPENDENCIAS PRINCIPALES (pom.xml)
+═══════════════════════════════════════════════════════════════════
+
+✅ Spring Boot 3.2.0
+✅ Spring Web (REST API)
+✅ Spring Data JPA (Persistencia)
+✅ Spring Security (Seguridad)
+✅ Spring Validation (Validaciones)
+✅ Azure SQL Driver (Producción)
+✅ H2 Database (Desarrollo)
+✅ Lombok (Reduce boilerplate)
+✅ JWT (Autenticación - futuro)
+✅ BCrypt (Encriptación passwords)
+
+
+═══════════════════════════════════════════════════════════════════
+CONFIGURACIÓN
+═══════════════════════════════════════════════════════════════════
+
+DESARROLLO (H2)
+• Puerto: 8081
+• Base de datos: jdbc:h2:mem:userdb
+• Usuario: sa
+• Password: password
+• H2 Console: http://localhost:8081/h2-console
+
+PRODUCCIÓN (Azure SQL)
+• Puerto: 8080
+• Base de datos: Configurado vía variables de entorno
+• Variables requeridas:
+  - DB_URL
+  - DB_USERNAME
+  - DB_PASSWORD
+  - JWT_SECRET
+
+
+═══════════════════════════════════════════════════════════════════
+API ENDPOINTS
+═══════════════════════════════════════════════════════════════════
+
+Base URL: http://localhost:8081/api/v1
+
+POST   /users                    → Registrar usuario
+GET    /users                    → Listar usuarios
+GET    /users/{id}               → Obtener por ID
+GET    /users/email/{email}      → Obtener por email
+PUT    /users/{id}               → Actualizar usuario
+DELETE /users/{id}               → Eliminar usuario
+PATCH  /users/{id}/activate      → Activar usuario
+PATCH  /users/{id}/deactivate    → Desactivar usuario
+GET    /actuator/health          → Health check
+
+
+═══════════════════════════════════════════════════════════════════
+MODELO DE BASE DE DATOS
+═══════════════════════════════════════════════════════════════════
+
+TABLE: users
+┌─────────────┬──────────────┬───────────┐
+│ Column      │ Type         │ Notes     │
+├─────────────┼──────────────┼───────────┤
+│ id          │ BIGINT       │ PK, AUTO  │
+│ email       │ VARCHAR(100) │ UNIQUE    │
+│ password    │ VARCHAR      │ BCrypt    │
+│ first_name  │ VARCHAR(50)  │           │
+│ last_name   │ VARCHAR(50)  │           │
+│ status      │ VARCHAR      │ Enum      │
+│ created_at  │ TIMESTAMP    │           │
+│ updated_at  │ TIMESTAMP    │           │
+└─────────────┴──────────────┴───────────┘
+
+TABLE: user_roles
+┌─────────────┬──────────────┬───────────┐
+│ Column      │ Type         │ Notes     │
+├─────────────┼──────────────┼───────────┤
+│ user_id     │ BIGINT       │ FK        │
+│ role        │ VARCHAR      │ Enum      │
+└─────────────┴──────────────┴───────────┘
+
+ROLES: STUDENT, ADMIN
+STATUS: ACTIVE, INACTIVE, SUSPENDED, PENDING
+
+
+═══════════════════════════════════════════════════════════════════
+ARCHIVOS DE DOCUMENTACIÓN
+═══════════════════════════════════════════════════════════════════
+
+📄 README_PRINCIPAL.md          → Índice general y guía inicial
+📄 INSTRUCCIONES_SETUP.md       → Paso a paso para setup
+📄 RESUMEN_PROYECTO.md          → Visión general y estadísticas
+📄 COMANDOS_RAPIDOS.md          → Cheat sheet de comandos
+📄 ESTRUCTURA_PROYECTO.txt      → Este archivo
+📄 user-service/README.md       → Documentación del código
+📄 user-service/ARCHITECTURE.md → Arquitectura hexagonal
+
+
+═══════════════════════════════════════════════════════════════════
+COMANDOS ESENCIALES
+═══════════════════════════════════════════════════════════════════
+
+# Compilar
+mvn clean install
+
+# Ejecutar
+mvn spring-boot:run
+
+# Tests
+mvn test
+
+# Package
+mvn clean package
+
+# Docker
+docker-compose up -d
+
+# Health check
+curl http://localhost:8081/actuator/health
+
+
+═══════════════════════════════════════════════════════════════════
+✅ PROYECTO LISTO PARA:
+═══════════════════════════════════════════════════════════════════
+
+✓ Desarrollo local con H2
+✓ Testing con Postman
+✓ Containerización con Docker
+✓ Despliegue a Azure
+✓ Integración con Azure SQL Database
+✓ Escalado horizontal
+✓ CI/CD pipelines
+
+
+═══════════════════════════════════════════════════════════════════
+Generado: 2025-11-03
+Versión: 1.0.0
+Estado: ✅ Producción Ready
+═══════════════════════════════════════════════════════════════════

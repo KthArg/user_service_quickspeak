@@ -1,0 +1,160 @@
+package com.yourteacher.userservice.application.service;
+
+import com.yourteacher.userservice.domain.model.User;
+import com.yourteacher.userservice.domain.model.UserStatus;
+import com.yourteacher.userservice.domain.port.in.UserService;
+import com.yourteacher.userservice.domain.port.out.PasswordEncoder;
+import com.yourteacher.userservice.domain.port.out.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementación del servicio de usuarios (Application Layer)
+ * Contiene la lógica de aplicación y orquesta los casos de uso
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class UserServiceImpl implements UserService {
+    
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    
+    @Override
+    public User registerUser(User user) {
+        // Validar que el email no exista
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("El email ya está registrado");
+        }
+        
+        // Validar email
+        if (!user.hasValidEmail()) {
+            throw new IllegalArgumentException("El email no es válido");
+        }
+        
+        // Encriptar contraseña
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        
+        // Crear usuario con valores iniciales
+        User newUser = User.builder()
+                .email(user.getEmail())
+                .password(encodedPassword)
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles())
+                .status(UserStatus.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        
+        return userRepository.save(newUser);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+    
+    @Override
+    public User updateUser(Long id, User user) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        
+        // Actualizar solo campos permitidos
+        User updatedUser = User.builder()
+                .id(existingUser.getId())
+                .email(existingUser.getEmail()) // Email no se puede cambiar
+                .password(existingUser.getPassword()) // Password se cambia por otro endpoint
+                .firstName(user.getFirstName() != null ? user.getFirstName() : existingUser.getFirstName())
+                .lastName(user.getLastName() != null ? user.getLastName() : existingUser.getLastName())
+                .roles(user.getRoles() != null ? user.getRoles() : existingUser.getRoles())
+                .status(existingUser.getStatus())
+                .createdAt(existingUser.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        
+        return userRepository.save(updatedUser);
+    }
+    
+    @Override
+    public void deleteUser(Long id) {
+        if (!userRepository.findById(id).isPresent()) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+        userRepository.deleteById(id);
+    }
+    
+    @Override
+    public User activateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        
+        user.activate();
+        
+        User activatedUser = User.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        
+        return userRepository.save(activatedUser);
+    }
+    
+    @Override
+    public User deactivateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        
+        user.deactivate();
+        
+        User deactivatedUser = User.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        
+        return userRepository.save(deactivatedUser);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean validateCredentials(String email, String password) {
+        Optional<User> user = userRepository.findByEmail(email);
+        
+        if (user.isEmpty() || !user.get().isActive()) {
+            return false;
+        }
+        
+        return passwordEncoder.matches(password, user.get().getPassword());
+    }
+}

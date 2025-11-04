@@ -1,0 +1,100 @@
+spring:
+  application:
+    name: user-service
+  
+  # Configuración de Azure SQL Database
+  datasource:
+    url: ${DB_URL:jdbc:sqlserver://yourteacher-sql-server.database.windows.net:1433;database=userservice-db;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;}
+    username: ${DB_USERNAME:sqladmin}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    
+    # Configuración de pool de conexiones HikariCP
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      auto-commit: true
+  
+  # JPA/Hibernate para Azure SQL
+  jpa:
+    hibernate:
+      ddl-auto: validate  # En producción usamos 'validate' o 'none'
+    show-sql: false  # Desactivado en producción
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+    
+    # Desactivar inicialización con data.sql en producción
+    defer-datasource-initialization: false
+  
+  # SQL Initialization - desactivado en producción
+  sql:
+    init:
+      mode: never
+
+  # H2 Console deshabilitado en producción
+  h2:
+    console:
+      enabled: false
+
+# Configuración del servidor
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+
+# Configuración de seguridad JWT
+jwt:
+  secret: ${JWT_SECRET}  # DEBE estar configurado en Azure App Service
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# Logging para producción
+logging:
+  level:
+    root: WARN
+    com.yourteacher.userservice: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /home/LogFiles/application.log
+    max-size: 10MB
+    max-history: 30
+
+# Actuator para health checks
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+# Información de la aplicación
+info:
+  app:
+    name: YourTeacher User Service
+    description: Microservicio de gestión de usuarios
+    version: 1.0.0
+    environment: production

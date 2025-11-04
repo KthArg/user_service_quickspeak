@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p:*)",
+      "Bash(git mv:*)",
+      "Bash(mv:*)",
+      "Bash(tree:*)",
+      "Bash(mvn:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(powershell -Command \"[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

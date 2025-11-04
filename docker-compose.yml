@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Base de datos SQL Server para simular Azure SQL en local
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: user-service-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "YourStrong!Passw0rd" -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Aplicación User Service
+  user-service:
+    build: .
+    container_name: user-service-app
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILE=dev
+      - DB_URL=jdbc:sqlserver://sqlserver:1433;databaseName=userdb;encrypt=true;trustServerCertificate=true
+      - DB_USERNAME=sa
+      - DB_PASSWORD=YourStrong!Passw0rd
+      - DB_DRIVER=com.microsoft.sqlserver.jdbc.SQLServerDriver
+      - HIBERNATE_DIALECT=org.hibernate.dialect.SQLServerDialect
+      - DDL_AUTO=update
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:

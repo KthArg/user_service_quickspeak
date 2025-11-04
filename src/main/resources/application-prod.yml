@@ -1,0 +1,49 @@
+spring:
+  # Configuración de producción para Azure SQL
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+  
+  # Deshabilitar H2 console en producción
+  h2:
+    console:
+      enabled: false
+
+# JWT con configuración segura
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000} # 1 hora en producción
+
+# Logging para producción
+logging:
+  level:
+    root: WARN
+    com.yourteacher.userservice: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: /home/LogFiles/application.log
+
+# Actuator seguro
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: when-authorized

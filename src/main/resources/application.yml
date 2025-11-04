@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: user-service
+  
+  # Configuración de perfiles
+  profiles:
+    active: ${SPRING_PROFILE:dev}
+  
+  # Configuración de base de datos
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:userdb}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+  
+  # JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.H2Dialect}
+        format_sql: true
+
+  # SQL Initialization
+  sql:
+    init:
+      mode: always
+  
+  # H2 Console (solo para desarrollo)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Configuración del servidor
+server:
+  port: ${PORT:8082}
+  # No usamos context-path para que actuator esté en la raíz
+  # El path /api/v1 se configura en el controlador
+
+# Configuración de seguridad JWT
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 horas en milisegundos
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.yourteacher.userservice: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator (para health checks en Azure)
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  # Configuración para acceder al actuator sin el context-path
+  # Como el context-path es /api/v1, el actuator estará en /api/v1/actuator/health
+  # Si deseas que esté en la raíz, debes usar un puerto diferente:
+  # server:
+  #   port: 9090
