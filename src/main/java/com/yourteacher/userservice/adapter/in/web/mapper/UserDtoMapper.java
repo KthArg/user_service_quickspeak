@@ -51,8 +51,10 @@ public class UserDtoMapper {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .fullName(user.getFullName())
+                .avatarSeed(user.getAvatarSeed())
                 .roles(user.getRoles())
                 .status(user.getStatus())
+                .languages(null) // Los idiomas se cargan en GetUserProfileService cuando se necesitan
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

@@ -1,10 +1,16 @@
 package com.yourteacher.userservice.adapter.in.web;
 
+import com.yourteacher.userservice.adapter.in.web.dto.UserLanguageResponse;
 import com.yourteacher.userservice.adapter.in.web.dto.UserRequest;
 import com.yourteacher.userservice.adapter.in.web.dto.UserResponse;
 import com.yourteacher.userservice.adapter.in.web.mapper.UserDtoMapper;
+import com.yourteacher.userservice.adapter.in.web.mapper.UserLanguageDtoMapper;
+import com.yourteacher.userservice.domain.model.Language;
 import com.yourteacher.userservice.domain.model.User;
+import com.yourteacher.userservice.domain.model.UserLanguage;
+import com.yourteacher.userservice.domain.port.in.GetUserProfileUseCase;
 import com.yourteacher.userservice.domain.port.in.UserService;
+import com.yourteacher.userservice.domain.port.out.LanguageRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -22,9 +29,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
-    
+
     private final UserService userService;
+    private final GetUserProfileUseCase getUserProfileUseCase;
     private final UserDtoMapper mapper;
+    private final UserLanguageDtoMapper userLanguageMapper;
+    private final LanguageRepository languageRepository;
     
     /**
      * POST /api/v1/users - Registrar nuevo usuario
@@ -105,5 +115,38 @@ public class UserController {
     public ResponseEntity<UserResponse> deactivateUser(@PathVariable Long id) {
         User deactivatedUser = userService.deactivateUser(id);
         return ResponseEntity.ok(mapper.toResponse(deactivatedUser));
+    }
+
+    /**
+     * GET /api/v1/users/{id}/profile - Obtener perfil completo del usuario con idiomas
+     */
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable Long id) {
+        // Obtener perfil completo (usuario + idiomas)
+        GetUserProfileUseCase.UserProfile profile = getUserProfileUseCase.getUserProfile(id);
+
+        // Obtener información detallada de los idiomas
+        List<UserLanguage> userLanguages = profile.getLanguages();
+
+        // Crear mapa de idiomas obteniendo cada uno por su ID
+        Map<Long, Language> languagesMap = userLanguages.stream()
+                .map(UserLanguage::getLanguageId)
+                .distinct()
+                .map(languageRepository::findById)
+                .filter(java.util.Optional::isPresent)
+                .map(java.util.Optional::get)
+                .collect(Collectors.toMap(Language::getId, lang -> lang));
+
+        // Mapear idiomas a DTOs
+        List<UserLanguageResponse> languageResponses = userLanguageMapper.toResponseList(
+                userLanguages,
+                languagesMap
+        );
+
+        // Crear respuesta completa
+        UserResponse response = mapper.toResponse(profile.getUser());
+        response.setLanguages(languageResponses);
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,14 +20,16 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-    
+
     private Long id;
     private String email;
     private String firstName;
     private String lastName;
     private String fullName;
+    private String avatarSeed;
     private Set<Role> roles;
     private UserStatus status;
+    private List<UserLanguageResponse> languages;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
