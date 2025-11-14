@@ -40,8 +40,10 @@ target/
 .project
 .settings/
 bin/
-chats/
+
+# Claude Code
 .claude/
+chats/
 
 # IDE - VS Code
 .vscode/
@@ -66,4 +68,12 @@ Thumbs.db
 *.cer
 *.crt
 *.key
-certs/passwords.txt
+
+# Secrets and Passwords
+**/passwords.txt
+*password*.txt
+
+# Certs folder - allow README and .gitkeep but ignore certificates
+certs/*
+!certs/README.md
+!certs/.gitkeep

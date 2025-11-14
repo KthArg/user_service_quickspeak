@@ -1,0 +1,2 @@
+# Este archivo mantiene la carpeta certs/ en el repositorio
+# Los certificados reales (.pfx, .p12, .jks, etc.) están excluidos por .gitignore por seguridad
