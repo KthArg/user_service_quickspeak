@@ -1,49 +1,67 @@
+# Configuración de Producción con mTLS (Mutual TLS)
+# Este perfil se activa en Azure para comunicación segura con APIM
+
+server:
+  port: ${PORT:8443}
+  ssl:
+    enabled: true
+    # KeyStore del servidor (contiene certificado y clave privada del servidor)
+    key-store: classpath:server-keystore.p12
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:quickspeak-keystore-pass}
+    key-store-type: PKCS12
+    key-alias: server
+
+    # Requerir certificado de cliente (mTLS)
+    client-auth: need
+
+    # TrustStore (contiene certificados de clientes confiables - APIM)
+    trust-store: classpath:server-truststore.jks
+    trust-store-password: ${SSL_TRUSTSTORE_PASSWORD:quickspeak-truststore-pass}
+    trust-store-type: JKS
+
+    # Protocolos TLS habilitados
+    enabled-protocols: TLSv1.2,TLSv1.3
+
+# Base de datos de producción (Azure SQL o PostgreSQL)
 spring:
-  # Configuración de producción para Azure SQL
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
-  
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.SQLServerDialect
-  
-  # Deshabilitar H2 console en producción
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
+        format_sql: false
+
   h2:
     console:
       enabled: false
 
-# JWT con configuración segura
+# JWT
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:3600000} # 1 hora en producción
+  expiration: ${JWT_EXPIRATION:86400000}
 
-# Logging para producción
+# Logging en producción
 logging:
   level:
     root: WARN
     com.yourteacher.userservice: INFO
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
-  file:
-    name: /home/LogFiles/application.log
 
-# Actuator seguro
+# Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info
   endpoint:
     health:
       show-details: when-authorized

@@ -57,3 +57,13 @@ chats/
 # OS
 .DS_Store
 Thumbs.db
+
+# Certificates and Keys (SECURITY - Never commit these)
+*.p12
+*.pfx
+*.jks
+*.pem
+*.cer
+*.crt
+*.key
+certs/passwords.txt

@@ -1,0 +1,974 @@
+openapi: 3.0.3
+info:
+  title: User Service API - QuickSpeak
+  description: |
+    API para gestión de usuarios, autenticación e idiomas del sistema QuickSpeak.
+
+    Incluye:
+    - Autenticación (login, registro, OAuth)
+    - Gestión de usuarios (CRUD completo)
+    - Catálogo de idiomas
+    - Gestión de idiomas de usuario
+  version: 1.0.0
+  contact:
+    name: QuickSpeak Team
+    email: support@quickspeak.com
+
+servers:
+  - url: https://user-service-quickspeak.azurewebsites.net
+    description: Servidor de producción en Azure
+  - url: http://localhost:8082
+    description: Servidor de desarrollo local
+
+tags:
+  - name: Authentication
+    description: Operaciones de autenticación y registro
+  - name: Users
+    description: Gestión de usuarios
+  - name: Languages
+    description: Catálogo de idiomas disponibles
+  - name: User Languages
+    description: Gestión de idiomas de usuarios
+
+paths:
+  # ==================== AUTHENTICATION ====================
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login de usuario
+      description: Autenticar usuario con email y contraseña, retorna JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: user@example.com
+              password: password123
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Registro de usuario
+      description: Registrar nuevo usuario y generar JWT token automáticamente
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            example:
+              email: newuser@example.com
+              password: password123
+              firstName: John
+              lastName: Doe
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Usuario ya existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/oauth:
+    post:
+      tags:
+        - Authentication
+      summary: Login/Registro OAuth
+      description: Autenticar o registrar usuario vía OAuth (Google, etc.)
+      operationId: oauthLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthLoginRequest'
+            example:
+              email: user@gmail.com
+              firstName: John
+              lastName: Doe
+              provider: GOOGLE
+              providerId: google-user-id-123
+      responses:
+        '200':
+          description: Usuario existente autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '201':
+          description: Nuevo usuario creado y autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== USERS ====================
+  /api/v1/users:
+    get:
+      tags:
+        - Users
+      summary: Listar todos los usuarios
+      description: Obtener lista completa de usuarios registrados
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+
+    post:
+      tags:
+        - Users
+      summary: Crear usuario
+      description: Registrar nuevo usuario (sin generar token automáticamente)
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Obtener usuario por ID
+      description: Obtener información de un usuario específico por su ID
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Users
+      summary: Actualizar usuario
+      description: Actualizar datos de un usuario existente
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Users
+      summary: Eliminar usuario
+      description: Eliminar un usuario del sistema
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/email/{email}:
+    get:
+      tags:
+        - Users
+      summary: Obtener usuario por email
+      description: Buscar usuario por su dirección de email
+      operationId: getUserByEmail
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email del usuario
+          schema:
+            type: string
+            format: email
+          example: user@example.com
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{id}/profile:
+    get:
+      tags:
+        - Users
+      summary: Obtener perfil completo
+      description: Obtener perfil completo del usuario incluyendo sus idiomas
+      operationId: getUserProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Perfil del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{id}/activate:
+    patch:
+      tags:
+        - Users
+      summary: Activar usuario
+      description: Activar cuenta de usuario desactivada
+      operationId: activateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Usuario activado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{id}/deactivate:
+    patch:
+      tags:
+        - Users
+      summary: Desactivar usuario
+      description: Desactivar cuenta de usuario activa
+      operationId: deactivateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Usuario desactivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== LANGUAGES ====================
+  /api/v1/languages:
+    get:
+      tags:
+        - Languages
+      summary: Listar todos los idiomas
+      description: Obtener catálogo completo de idiomas disponibles
+      operationId: getAllLanguages
+      responses:
+        '200':
+          description: Lista de idiomas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageResponse'
+
+  /api/v1/languages/{id}:
+    get:
+      tags:
+        - Languages
+      summary: Obtener idioma por ID
+      description: Obtener información de un idioma específico por su ID
+      operationId: getLanguageById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del idioma
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: Idioma encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageResponse'
+        '404':
+          description: Idioma no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/languages/code/{code}:
+    get:
+      tags:
+        - Languages
+      summary: Obtener idioma por código ISO
+      description: Buscar idioma por su código ISO (ej. en, es, fr)
+      operationId: getLanguageByCode
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: Código ISO del idioma (2-3 letras)
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 3
+          example: en
+      responses:
+        '200':
+          description: Idioma encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageResponse'
+        '404':
+          description: Código no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/languages/starting:
+    get:
+      tags:
+        - Languages
+      summary: Idiomas recomendados
+      description: Obtener idiomas recomendados para comenzar a aprender
+      operationId: getStartingLanguages
+      responses:
+        '200':
+          description: Lista de idiomas recomendados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageResponse'
+
+  /api/v1/languages/search:
+    get:
+      tags:
+        - Languages
+      summary: Buscar idiomas
+      description: Buscar idiomas por nombre
+      operationId: searchLanguages
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Término de búsqueda
+          schema:
+            type: string
+          example: Spanish
+      responses:
+        '200':
+          description: Resultados de búsqueda
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageResponse'
+
+  # ==================== USER LANGUAGES ====================
+  /api/v1/users/{userId}/languages:
+    get:
+      tags:
+        - User Languages
+      summary: Listar idiomas del usuario
+      description: Obtener todos los idiomas asociados a un usuario
+      operationId: getUserLanguages
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de idiomas del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserLanguageResponse'
+
+    post:
+      tags:
+        - User Languages
+      summary: Agregar idioma a usuario
+      description: Asociar un nuevo idioma al usuario
+      operationId: addLanguageToUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddLanguageRequest'
+            example:
+              languageId: 1
+      responses:
+        '201':
+          description: Idioma agregado exitosamente
+        '404':
+          description: Usuario o idioma no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Usuario ya tiene ese idioma
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{userId}/languages/native:
+    get:
+      tags:
+        - User Languages
+      summary: Obtener idioma nativo
+      description: Obtener el idioma nativo del usuario
+      operationId: getNativeLanguage
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Idioma nativo del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLanguageResponse'
+        '404':
+          description: Usuario no tiene idioma nativo configurado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{userId}/languages/learning:
+    get:
+      tags:
+        - User Languages
+      summary: Idiomas en aprendizaje
+      description: Obtener idiomas que el usuario está aprendiendo
+      operationId: getLearningLanguages
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de idiomas en aprendizaje
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserLanguageResponse'
+
+  /api/v1/users/{userId}/languages/{languageId}/native:
+    patch:
+      tags:
+        - User Languages
+      summary: Marcar como idioma nativo
+      description: Establecer un idioma como nativo del usuario
+      operationId: setNativeLanguage
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+        - name: languageId
+          in: path
+          required: true
+          description: ID del idioma
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Idioma marcado como nativo exitosamente
+        '404':
+          description: Usuario o idioma no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{userId}/languages/{languageId}:
+    delete:
+      tags:
+        - User Languages
+      summary: Remover idioma de usuario
+      description: Eliminar la asociación de un idioma con el usuario
+      operationId: removeLanguageFromUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+            format: int64
+        - name: languageId
+          in: path
+          required: true
+          description: ID del idioma
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Idioma removido exitosamente
+        '404':
+          description: Usuario o idioma no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+# ==================== COMPONENTS ====================
+components:
+  schemas:
+    # Authentication Schemas
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email del usuario
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: Contraseña del usuario
+          minLength: 6
+          example: password123
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token de autenticación
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        userId:
+          type: integer
+          format: int64
+          description: ID del usuario
+          example: 1
+        email:
+          type: string
+          format: email
+          description: Email del usuario
+          example: user@example.com
+        firstName:
+          type: string
+          description: Nombre del usuario
+          example: John
+        lastName:
+          type: string
+          description: Apellido del usuario
+          example: Doe
+
+    OAuthLoginRequest:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - provider
+        - providerId
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email del usuario desde el proveedor OAuth
+          example: user@gmail.com
+        firstName:
+          type: string
+          description: Nombre del usuario
+          example: John
+        lastName:
+          type: string
+          description: Apellido del usuario
+          example: Doe
+        provider:
+          type: string
+          description: Proveedor OAuth (GOOGLE, FACEBOOK, etc.)
+          enum:
+            - GOOGLE
+            - FACEBOOK
+            - APPLE
+          example: GOOGLE
+        providerId:
+          type: string
+          description: ID único del usuario en el proveedor OAuth
+          example: google-user-id-123
+
+    # User Schemas
+    UserRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email del usuario
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: Contraseña del usuario
+          minLength: 6
+          example: password123
+        firstName:
+          type: string
+          description: Nombre del usuario
+          example: John
+        lastName:
+          type: string
+          description: Apellido del usuario
+          example: Doe
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID del usuario
+          example: 1
+        email:
+          type: string
+          format: email
+          description: Email del usuario
+          example: user@example.com
+        firstName:
+          type: string
+          description: Nombre del usuario
+          example: John
+        lastName:
+          type: string
+          description: Apellido del usuario
+          example: Doe
+        active:
+          type: boolean
+          description: Estado de activación del usuario
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación
+          example: '2025-01-15T10:30:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha de última actualización
+          example: '2025-01-15T10:30:00Z'
+
+    UserProfileResponse:
+      allOf:
+        - $ref: '#/components/schemas/UserResponse'
+        - type: object
+          properties:
+            languages:
+              type: array
+              description: Idiomas del usuario
+              items:
+                $ref: '#/components/schemas/UserLanguageResponse'
+
+    # Language Schemas
+    LanguageResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID del idioma
+          example: 1
+        name:
+          type: string
+          description: Nombre del idioma
+          example: English
+        code:
+          type: string
+          description: Código ISO del idioma
+          example: en
+        nativeName:
+          type: string
+          description: Nombre nativo del idioma
+          example: English
+        flagEmoji:
+          type: string
+          description: Emoji de la bandera
+          example: 🇺🇸
+        isStartingLanguage:
+          type: boolean
+          description: Si es un idioma recomendado para empezar
+          example: true
+
+    # User Language Schemas
+    UserLanguageResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: ID del usuario
+          example: 1
+        languageId:
+          type: integer
+          format: int64
+          description: ID del idioma
+          example: 1
+        languageName:
+          type: string
+          description: Nombre del idioma
+          example: English
+        languageCode:
+          type: string
+          description: Código ISO del idioma
+          example: en
+        isNative:
+          type: boolean
+          description: Si es el idioma nativo del usuario
+          example: true
+        addedAt:
+          type: string
+          format: date-time
+          description: Fecha en que se agregó el idioma
+          example: '2025-01-15T10:30:00Z'
+
+    AddLanguageRequest:
+      type: object
+      required:
+        - languageId
+      properties:
+        languageId:
+          type: integer
+          format: int64
+          description: ID del idioma a agregar
+          example: 1
+
+    # Error Schema
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp del error
+          example: '2025-01-15T10:30:00Z'
+        status:
+          type: integer
+          description: Código de estado HTTP
+          example: 400
+        error:
+          type: string
+          description: Nombre del error
+          example: Bad Request
+        message:
+          type: string
+          description: Mensaje de error descriptivo
+          example: Invalid email format
+        path:
+          type: string
+          description: Path del endpoint que generó el error
+          example: /api/v1/auth/login
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtenido del endpoint de login
+
+# Aplicar seguridad JWT a endpoints que lo requieran
+# (Descomenta las líneas siguientes si necesitas proteger endpoints)
+# security:
+#   - bearerAuth: []

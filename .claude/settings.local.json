@@ -17,7 +17,16 @@
       "Bash(test:*)",
       "Bash(npm run dev:*)",
       "Bash(taskkill:*)",
-      "Bash(powershell -Command \"Stop-Process -Id 2276 -Force\")"
+      "Bash(powershell -Command \"Stop-Process -Id 2276 -Force\")",
+      "Bash(bash:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File generate-certificates.ps1)",
+      "Bash(keytool:*)",
+      "Bash(ls:*)",
+      "Bash(del \\?C:UsersKennethDocumentsTECdiseñoproyectouser_service_quickspeaknul)",
+      "Bash(cmd /c \"del /F \\\\?\\C:\\Users\\Kenneth\\Documents\\TEC\\diseño\\proyecto\\user_service_quickspeak\\nul\")",
+      "Bash(powershell -Command \"Remove-Item -Path ''\\?\\C:\\Users\\Kenneth\\Documents\\TEC\\diseño\\proyecto\\user_service_quickspeak\\nul'' -Force\")",
+      "Bash(powershell -Command \"Remove-Item -LiteralPath ''.\\nul'' -Force\")",
+      "Bash(git clean:*)"
     ],
     "deny": [],
     "ask": []
