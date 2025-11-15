@@ -1,5 +1,6 @@
 package com.yourteacher.userservice.infrastructure.exception;
 
+import com.yourteacher.userservice.domain.exception.InvalidCredentialsException;
 import com.yourteacher.userservice.domain.exception.LanguageAlreadyAddedException;
 import com.yourteacher.userservice.domain.exception.LanguageNotFoundException;
 import com.yourteacher.userservice.domain.exception.MultipleNativeLanguagesException;
@@ -130,6 +131,23 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Maneja InvalidCredentialsException (credenciales inválidas en login)
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(
+            InvalidCredentialsException ex) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Unauthorized")
+                .message("Email o contraseña incorrectos")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     /**

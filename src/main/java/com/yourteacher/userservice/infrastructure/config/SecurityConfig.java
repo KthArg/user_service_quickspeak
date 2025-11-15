@@ -60,8 +60,10 @@ public class SecurityConfig {
                     "/api/v1/auth/register",
                     "/api/v1/auth/oauth",
                     "/api/v1/languages",
-                    "/api/v1/languages/catalog/**",
+                    "/api/v1/languages/{id}",
+                    "/api/v1/languages/code/{code}",
                     "/api/v1/languages/starting",
+                    "/api/v1/languages/search",
                     "/h2-console/**",
                     "/actuator/**"
                 ).permitAll()
