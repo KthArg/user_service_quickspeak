@@ -43,6 +43,11 @@ spring:
     console:
       enabled: false
 
+  # Deshabilitar inicialización de datos en producción
+  sql:
+    init:
+      mode: never
+
 # JWT
 jwt:
   secret: ${JWT_SECRET}
