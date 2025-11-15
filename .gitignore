@@ -59,6 +59,7 @@ chats/
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Certificates and Keys (SECURITY - Never commit these)
 *.p12
@@ -68,6 +69,10 @@ Thumbs.db
 *.cer
 *.crt
 *.key
+
+# EXCEPTION: Allow keystores in src/main/resources for deployment
+!src/main/resources/server-keystore.p12
+!src/main/resources/server-truststore.jks
 
 # Secrets and Passwords
 **/passwords.txt
