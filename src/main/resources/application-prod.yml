@@ -1,26 +1,11 @@
-# Configuración de Producción con mTLS (Mutual TLS)
-# Este perfil se activa en Azure para comunicación segura con APIM
+# Configuración de Producción
+# Azure App Service maneja SSL/TLS termination, el backend usa HTTP
 
 server:
-  port: ${PORT:8443}
-  ssl:
-    enabled: true
-    # KeyStore del servidor (contiene certificado y clave privada del servidor)
-    key-store: classpath:server-keystore.p12
-    key-store-password: ${SSL_KEYSTORE_PASSWORD:quickspeak-keystore-pass}
-    key-store-type: PKCS12
-    key-alias: server
-
-    # Requerir certificado de cliente (mTLS)
-    client-auth: need
-
-    # TrustStore (contiene certificados de clientes confiables - APIM)
-    trust-store: classpath:server-truststore.jks
-    trust-store-password: ${SSL_TRUSTSTORE_PASSWORD:quickspeak-truststore-pass}
-    trust-store-type: JKS
-
-    # Protocolos TLS habilitados
-    enabled-protocols: TLSv1.2,TLSv1.3
+  port: ${PORT:8080}
+  # SSL deshabilitado - Azure App Service maneja HTTPS externamente
+  # Para mTLS con APIM, la autenticación de certificado se maneja en APIM
+  # y Azure App Service pasa la petición por HTTP al backend
 
 # Base de datos de producción (Azure SQL o PostgreSQL)
 spring:
