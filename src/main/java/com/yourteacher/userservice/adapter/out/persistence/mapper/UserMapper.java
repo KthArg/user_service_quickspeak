@@ -28,6 +28,7 @@ public class UserMapper {
                 .avatarSeed(entity.getAvatarSeed())
                 .roles(entity.getRoles())
                 .status(entity.getStatus())
+                .authProvider(entity.getAuthProvider())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -50,6 +51,7 @@ public class UserMapper {
                 .avatarSeed(domain.getAvatarSeed())
                 .roles(domain.getRoles())
                 .status(domain.getStatus())
+                .authProvider(domain.getAuthProvider())
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .build();

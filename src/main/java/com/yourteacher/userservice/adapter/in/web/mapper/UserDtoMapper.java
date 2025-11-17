@@ -54,6 +54,7 @@ public class UserDtoMapper {
                 .avatarSeed(user.getAvatarSeed())
                 .roles(user.getRoles())
                 .status(user.getStatus())
+                .authProvider(user.getAuthProvider()) // Incluir proveedor de autenticación
                 .languages(null) // Los idiomas se cargan en GetUserProfileService cuando se necesitan
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())

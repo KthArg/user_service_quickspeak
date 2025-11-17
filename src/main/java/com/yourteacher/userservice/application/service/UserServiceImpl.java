@@ -1,5 +1,6 @@
 package com.yourteacher.userservice.application.service;
 
+import com.yourteacher.userservice.domain.model.AuthProvider;
 import com.yourteacher.userservice.domain.model.User;
 import com.yourteacher.userservice.domain.model.UserStatus;
 import com.yourteacher.userservice.domain.port.in.UserService;
@@ -45,6 +46,9 @@ public class UserServiceImpl implements UserService {
         String avatarSeed = generateAvatarSeed(user.getEmail());
 
         // Crear usuario con valores iniciales
+        // Si no se especifica authProvider, por defecto es LOCAL
+        AuthProvider provider = user.getAuthProvider() != null ? user.getAuthProvider() : AuthProvider.LOCAL;
+
         User newUser = User.builder()
                 .email(user.getEmail())
                 .password(encodedPassword)
@@ -53,6 +57,7 @@ public class UserServiceImpl implements UserService {
                 .avatarSeed(avatarSeed)
                 .roles(user.getRoles())
                 .status(UserStatus.ACTIVE)
+                .authProvider(provider)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -93,6 +98,7 @@ public class UserServiceImpl implements UserService {
                 .avatarSeed(existingUser.getAvatarSeed()) // AvatarSeed no se puede cambiar
                 .roles(user.getRoles() != null ? user.getRoles() : existingUser.getRoles())
                 .status(existingUser.getStatus())
+                .authProvider(existingUser.getAuthProvider()) // AuthProvider no se puede cambiar
                 .createdAt(existingUser.getCreatedAt())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -124,6 +130,7 @@ public class UserServiceImpl implements UserService {
                 .avatarSeed(user.getAvatarSeed())
                 .roles(user.getRoles())
                 .status(user.getStatus())
+                .authProvider(user.getAuthProvider())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -147,6 +154,7 @@ public class UserServiceImpl implements UserService {
                 .avatarSeed(user.getAvatarSeed())
                 .roles(user.getRoles())
                 .status(user.getStatus())
+                .authProvider(user.getAuthProvider())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -171,6 +179,11 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
+        // Verificar que el usuario no sea OAuth (solo usuarios locales pueden cambiar password)
+        if (!existingUser.canChangeCredentials()) {
+            throw new IllegalArgumentException("Los usuarios autenticados con OAuth no pueden cambiar su contraseña");
+        }
+
         // Verificar que la contraseña actual sea correcta
         if (!passwordEncoder.matches(currentPassword, existingUser.getPassword())) {
             throw new IllegalArgumentException("La contraseña actual es incorrecta");
@@ -189,6 +202,7 @@ public class UserServiceImpl implements UserService {
                 .avatarSeed(existingUser.getAvatarSeed())
                 .roles(existingUser.getRoles())
                 .status(existingUser.getStatus())
+                .authProvider(existingUser.getAuthProvider())
                 .createdAt(existingUser.getCreatedAt())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -200,6 +214,11 @@ public class UserServiceImpl implements UserService {
     public User changeEmail(Long id, String newEmail) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        // Verificar que el usuario no sea OAuth (solo usuarios locales pueden cambiar email)
+        if (!existingUser.canChangeCredentials()) {
+            throw new IllegalArgumentException("Los usuarios autenticados con OAuth no pueden cambiar su email");
+        }
 
         // Validar que el nuevo email no esté en uso
         if (userRepository.existsByEmail(newEmail)) {
@@ -221,6 +240,7 @@ public class UserServiceImpl implements UserService {
                 .avatarSeed(existingUser.getAvatarSeed())
                 .roles(existingUser.getRoles())
                 .status(existingUser.getStatus())
+                .authProvider(existingUser.getAuthProvider())
                 .createdAt(existingUser.getCreatedAt())
                 .updatedAt(LocalDateTime.now())
                 .build();

@@ -1,5 +1,6 @@
 package com.yourteacher.userservice.adapter.out.persistence.entity;
 
+import com.yourteacher.userservice.domain.model.AuthProvider;
 import com.yourteacher.userservice.domain.model.Role;
 import com.yourteacher.userservice.domain.model.UserStatus;
 import jakarta.persistence.*;
@@ -51,7 +52,11 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status;
-    
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", nullable = false)
+    private AuthProvider authProvider;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     

@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    
+
     private Long id;
     private String email;
     private String password;
@@ -26,6 +26,7 @@ public class User {
     private String avatarSeed;
     private Set<Role> roles;
     private UserStatus status;
+    private AuthProvider authProvider; // Proveedor de autenticación (LOCAL, GOOGLE, etc.)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -69,5 +70,20 @@ public class User {
      */
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+    /**
+     * Verifica si el usuario usa autenticación OAuth (Google, Microsoft, etc.)
+     */
+    public boolean isOAuthUser() {
+        return authProvider != null && authProvider != AuthProvider.LOCAL;
+    }
+
+    /**
+     * Verifica si el usuario puede cambiar su email y contraseña
+     * Los usuarios OAuth no pueden cambiar sus credenciales
+     */
+    public boolean canChangeCredentials() {
+        return AuthProvider.LOCAL.equals(authProvider);
     }
 }

@@ -1,5 +1,6 @@
 package com.yourteacher.userservice.adapter.in.web.dto;
 
+import com.yourteacher.userservice.domain.model.AuthProvider;
 import com.yourteacher.userservice.domain.model.Role;
 import com.yourteacher.userservice.domain.model.UserStatus;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class UserResponse {
     private String avatarSeed;
     private Set<Role> roles;
     private UserStatus status;
+    private AuthProvider authProvider; // Proveedor de autenticación (LOCAL, GOOGLE, etc.)
     private List<UserLanguageResponse> languages;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
