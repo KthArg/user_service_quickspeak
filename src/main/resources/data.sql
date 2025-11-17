@@ -38,15 +38,15 @@ INSERT INTO languages (name, code, flag_url, created_at) VALUES
 
 -- Usuario Estudiante (password: student123)
 -- BCrypt hash generado para "student123"
-INSERT INTO users (email, password, first_name, last_name, status, created_at, updated_at)
-VALUES ('student@quickspeak.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'María', 'González', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users (email, password, first_name, last_name, avatar_seed, auth_provider, status, created_at, updated_at)
+VALUES ('student@quickspeak.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'María', 'González', 'student-avatar-seed-123', 'LOCAL', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO user_roles (user_id, role) VALUES ((SELECT id FROM users WHERE email = 'student@quickspeak.com'), 'STUDENT');
 
 -- Usuario Admin (password: admin123)
 -- BCrypt hash generado para "admin123"
-INSERT INTO users (email, password, first_name, last_name, status, created_at, updated_at)
-VALUES ('admin@quickspeak.com', '$2a$10$A/lRwYlJ1rW6dKZvCr7WduGVNnz.eDvKvKvbC0VKOvKvBJVo8nxS2', 'Ana', 'Martínez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users (email, password, first_name, last_name, avatar_seed, auth_provider, status, created_at, updated_at)
+VALUES ('admin@quickspeak.com', '$2a$10$A/lRwYlJ1rW6dKZvCr7WduGVNnz.eDvKvKvbC0VKOvKvBJVo8nxS2', 'Ana', 'Martínez', 'admin-avatar-seed-456', 'LOCAL', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO user_roles (user_id, role) VALUES ((SELECT id FROM users WHERE email = 'admin@quickspeak.com'), 'ADMIN');
 
