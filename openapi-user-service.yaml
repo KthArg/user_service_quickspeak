@@ -521,6 +521,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/LanguageResponse'
 
+  /api/v1/languages/select-native:
+    get:
+      tags:
+        - Languages
+      summary: Idiomas para selección nativa
+      description: Obtener idiomas disponibles para seleccionar como idioma nativo durante el registro
+      operationId: getLanguagesForNativeSelection
+      responses:
+        '200':
+          description: Lista de idiomas disponibles para selección nativa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageResponse'
+
   # ==================== USER LANGUAGES ====================
   /api/v1/users/{userId}/languages:
     get:
