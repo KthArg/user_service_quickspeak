@@ -115,6 +115,7 @@ URL: `http://localhost:8081/h2-console`
 | GET | `/api/v1/languages/{id}` | Obtener idioma por ID |
 | GET | `/api/v1/languages/code/{code}` | Obtener idioma por código ISO (ej: "es", "en") |
 | GET | `/api/v1/languages/starting` | Obtener idiomas recomendados para empezar (top 10) |
+| GET | `/api/v1/languages/select-native` | Obtener idiomas para selección de idioma nativo (usado en registro) |
 
 ### Gestión de Idiomas de Usuarios
 

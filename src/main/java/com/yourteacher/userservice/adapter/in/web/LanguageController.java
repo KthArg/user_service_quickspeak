@@ -67,4 +67,15 @@ public class LanguageController {
         var languages = getLanguageCatalog.searchLanguagesByName(query);
         return ResponseEntity.ok(mapper.toResponseList(languages));
     }
+
+    /**
+     * GET /api/v1/languages/select-native - Obtener idiomas para selección de idioma nativo
+     * Este endpoint es usado por el frontend durante el proceso de registro
+     */
+    @GetMapping("/select-native")
+    public ResponseEntity<List<LanguageResponse>> getLanguagesForNativeSelection() {
+        // Retornamos los idiomas recomendados para empezar
+        var languages = getLanguageCatalog.getStartingLanguages();
+        return ResponseEntity.ok(mapper.toResponseList(languages));
+    }
 }
