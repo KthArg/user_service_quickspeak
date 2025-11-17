@@ -1,5 +1,7 @@
 package com.yourteacher.userservice.adapter.in.web;
 
+import com.yourteacher.userservice.adapter.in.web.dto.ChangeEmailRequest;
+import com.yourteacher.userservice.adapter.in.web.dto.ChangePasswordRequest;
 import com.yourteacher.userservice.adapter.in.web.dto.UserLanguageResponse;
 import com.yourteacher.userservice.adapter.in.web.dto.UserRequest;
 import com.yourteacher.userservice.adapter.in.web.dto.UserResponse;
@@ -148,5 +150,31 @@ public class UserController {
         response.setLanguages(languageResponses);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * PATCH /api/v1/users/{id}/password - Cambiar contraseña
+     */
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<UserResponse> changePassword(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        User updatedUser = userService.changePassword(
+                id,
+                request.getCurrentPassword(),
+                request.getNewPassword()
+        );
+        return ResponseEntity.ok(mapper.toResponse(updatedUser));
+    }
+
+    /**
+     * PATCH /api/v1/users/{id}/email - Cambiar email
+     */
+    @PatchMapping("/{id}/email")
+    public ResponseEntity<UserResponse> changeEmail(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangeEmailRequest request) {
+        User updatedUser = userService.changeEmail(id, request.getNewEmail());
+        return ResponseEntity.ok(mapper.toResponse(updatedUser));
     }
 }

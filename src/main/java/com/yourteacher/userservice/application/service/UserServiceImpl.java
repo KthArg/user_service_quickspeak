@@ -166,6 +166,68 @@ public class UserServiceImpl implements UserService {
         return passwordEncoder.matches(password, user.get().getPassword());
     }
 
+    @Override
+    public User changePassword(Long id, String currentPassword, String newPassword) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        // Verificar que la contraseña actual sea correcta
+        if (!passwordEncoder.matches(currentPassword, existingUser.getPassword())) {
+            throw new IllegalArgumentException("La contraseña actual es incorrecta");
+        }
+
+        // Encriptar la nueva contraseña
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        // Actualizar el usuario con la nueva contraseña
+        User updatedUser = User.builder()
+                .id(existingUser.getId())
+                .email(existingUser.getEmail())
+                .password(encodedPassword)
+                .firstName(existingUser.getFirstName())
+                .lastName(existingUser.getLastName())
+                .avatarSeed(existingUser.getAvatarSeed())
+                .roles(existingUser.getRoles())
+                .status(existingUser.getStatus())
+                .createdAt(existingUser.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return userRepository.save(updatedUser);
+    }
+
+    @Override
+    public User changeEmail(Long id, String newEmail) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        // Validar que el nuevo email no esté en uso
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new IllegalArgumentException("El email ya está registrado");
+        }
+
+        // Validar formato del email
+        if (newEmail == null || !newEmail.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("El email no es válido");
+        }
+
+        // Actualizar el usuario con el nuevo email
+        User updatedUser = User.builder()
+                .id(existingUser.getId())
+                .email(newEmail)
+                .password(existingUser.getPassword())
+                .firstName(existingUser.getFirstName())
+                .lastName(existingUser.getLastName())
+                .avatarSeed(existingUser.getAvatarSeed())
+                .roles(existingUser.getRoles())
+                .status(existingUser.getStatus())
+                .createdAt(existingUser.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return userRepository.save(updatedUser);
+    }
+
     /**
      * Genera un avatarSeed único basado en el email del usuario
      * Este seed puede ser usado con servicios como DiceBear para generar avatares

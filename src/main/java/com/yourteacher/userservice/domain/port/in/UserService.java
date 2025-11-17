@@ -56,4 +56,14 @@ public interface UserService {
      * Valida las credenciales de un usuario
      */
     boolean validateCredentials(String email, String password);
+
+    /**
+     * Cambia la contraseña de un usuario
+     */
+    User changePassword(Long id, String currentPassword, String newPassword);
+
+    /**
+     * Cambia el email de un usuario
+     */
+    User changeEmail(Long id, String newEmail);
 }
